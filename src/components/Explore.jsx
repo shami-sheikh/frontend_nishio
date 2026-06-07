@@ -31,6 +31,7 @@ const Explore = () => {
             placeholder="Search people..."
             className="flex-1 bg-transparent mx-auto max-w-sm text-sm text-white placeholder-zinc-600 focus:outline-none"
           />
+          
           {query && (
             <button
               onClick={() => setQuery("")}
