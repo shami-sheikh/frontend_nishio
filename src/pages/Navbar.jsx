@@ -1,5 +1,5 @@
 import React from 'react';
-import { FiHome, FiPlusSquare, FiSearch, FiUser, FiInstagram, FiLogOut, FiShield } from 'react-icons/fi';
+import { FiHome, FiPlusSquare, FiSearch, FiUser, FiInstagram, FiLogOut, FiShield, FiMessageCircle } from 'react-icons/fi';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
@@ -54,6 +54,10 @@ function Navbar() {
         <NavLink title='logout' to="/logout" className={({ isActive }) => getNavItemStyles(isActive, "hidden md:flex")}>
           <FiLogOut size={22} className="shrink-0 transition-transform group-hover:scale-105" />
           <span className="hidden md:inline text-sm tracking-wide">Logout</span>
+        </NavLink>
+        <NavLink title='logout' to="/chat" className={({ isActive }) => getNavItemStyles(isActive, "hidden md:flex")}>
+          <FiMessageCircle size={22} className="shrink-0 transition-transform group-hover:scale-105" />
+          <span className="hidden md:inline text-sm tracking-wide">chats</span>
         </NavLink>
 
         {/* Admin Link */}

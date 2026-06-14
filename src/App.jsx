@@ -20,6 +20,7 @@ import Posts from "./admin/pages/Posts";
 import AdminReels from "./admin/pages/AdminReels";
 import AdminStories from "./admin/pages/AdminStories";
 import AdminComments from "./admin/pages/Comments";
+import Chat from "./pages/Chat";
 
 const ProtectedRoute = ({ children }) => {
   const { isLoggedIn, initializing } = useAuth();
@@ -81,6 +82,14 @@ const App = () => {
         element={
           <ProtectedRoute>
             <Feed />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/chat"
+        element={
+          <ProtectedRoute>
+            <Chat />
           </ProtectedRoute>
         }
       />

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { FiGrid, FiArrowLeft } from "react-icons/fi";
+import { FiGrid, FiArrowLeft, FiMessageCircle } from "react-icons/fi";
 import { AiFillHeart } from "react-icons/ai";
 import { FiUserPlus, FiUserCheck } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
@@ -11,8 +11,15 @@ import axiosInstance from "../api/AxiosInstance";
 import Navbar from "../pages/Navbar";
 
 const UserProfile = () => {
+  const { startConversation } = useChat();
   const { userId } = useParams();
   const navigate = useNavigate();
+
+const handleMessage = async () => {
+  await startConversation(profileUser._id);
+  navigate("/chat");
+};
+
   const { user: currentUser } = useAuth();
   const { toggleFollow, isFollowing } = useFollow();
   const { posts } = usePost();
@@ -132,6 +139,12 @@ const UserProfile = () => {
             >
               {following ? <><FiUserCheck size={16} /> Following</> : <><FiUserPlus size={16} /> Follow</>}
             </button>
+            <button
+  onClick={handleMessage}
+  className="flex-1 py-3 rounded-2xl text-sm font-bold bg-zinc-800 hover:bg-zinc-700 text-white flex items-center justify-center gap-2"
+>
+  <FiMessageCircle size={16} /> Message
+</button>
           </div>
         </div>
 

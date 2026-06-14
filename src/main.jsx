@@ -12,6 +12,8 @@ import { ReelProvider } from "./context/ReelContext.jsx";
 import { StoryProvider } from "./context/StoryContext.jsx";
 import { AdminProvider } from "./context/AdminContext.jsx";
 import { NotificationProvider } from "./context/NotificationContext.jsx";
+import { SocketProvider } from "./context/SocketContext.jsx";
+import { ChatProvider } from "./context/ChatContext.jsx";
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <BrowserRouter>
@@ -23,8 +25,12 @@ createRoot(document.getElementById("root")).render(
             <StoryProvider>
              <AdminProvider>
               <NotificationProvider>
-                  <App />
+                <SocketProvider>
+                  <ChatProvider>
+                      <App />
         <Toaster position="top-right" />
+                  </ChatProvider>
+                </SocketProvider>
               </NotificationProvider>
              </AdminProvider>
             </StoryProvider>
