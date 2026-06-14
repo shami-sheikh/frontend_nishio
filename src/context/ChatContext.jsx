@@ -30,44 +30,49 @@ export const ChatProvider = ({ children }) => {
   }, [isLoggedIn, fetchConversations]);
 
   // listen for incoming messages
-  useEffect(() => {
-    if (!socket) return;
+useEffect(() => {
+  if (!socket) return;
 
-    const handleReceive = (message) => {
-      if (activeConversation && message.conversation === activeConversation._id) {
-        setMessages((prev) => [...prev, message]);
-      }
-      // update conversation list preview
-      setConversations((prev) =>
-        prev.map((c) =>
-          c._id === message.conversation ? { ...c, lastMessage: message, updatedAt: new Date() } : c
-        ).sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
-      );
-    };
-
-    const handleTyping = ({ conversationId, userId, userName }) => {
-      setTypingUsers((prev) => ({ ...prev, [conversationId]: { userId, userName } }));
-    };
-
-    const handleStopTyping = ({ conversationId }) => {
-      setTypingUsers((prev) => {
-        const updated = { ...prev };
-        delete updated[conversationId];
-        return updated;
+  const handleReceive = (message) => {
+    if (activeConversation && message.conversation === activeConversation._id) {
+      // ✅ check if message already exists to avoid duplicates
+      setMessages((prev) => {
+        const exists = prev.some((m) => m._id === message._id);
+        return exists ? prev : [...prev, message];
       });
-    };
+    }
+    // update conversation list preview
+    setConversations((prev) =>
+      prev.map((c) =>
+        c._id === message.conversation 
+          ? { ...c, lastMessage: message, updatedAt: new Date() } 
+          : c
+      ).sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
+    );
+  };
 
-    socket.on("receive_message", handleReceive);
-    socket.on("user_typing", handleTyping);
-    socket.on("user_stop_typing", handleStopTyping);
+  const handleTyping = ({ conversationId, userId, userName }) => {
+    setTypingUsers((prev) => ({ ...prev, [conversationId]: { userId, userName } }));
+  };
 
-    return () => {
-      socket.off("receive_message", handleReceive);
-      socket.off("user_typing", handleTyping);
-      socket.off("user_stop_typing", handleStopTyping);
-    };
-  }, [socket, activeConversation]);
+  const handleStopTyping = ({ conversationId }) => {
+    setTypingUsers((prev) => {
+      const updated = { ...prev };
+      delete updated[conversationId];
+      return updated;
+    });
+  };
 
+  socket.on("receive_message", handleReceive);
+  socket.on("user_typing", handleTyping);
+  socket.on("user_stop_typing", handleStopTyping);
+
+  return () => {
+    socket.off("receive_message", handleReceive);
+    socket.off("user_typing", handleTyping);
+    socket.off("user_stop_typing", handleStopTyping);
+  };
+}, [socket, activeConversation]);
   // open a conversation — fetch messages + join socket room
   const openConversation = async (conversation) => {
     if (activeConversation && socket) {
@@ -105,35 +110,42 @@ export const ChatProvider = ({ children }) => {
   };
 
   // send message via socket + save to DB
-  const sendMessage = async (text, file = null) => {
-    if (!activeConversation || (!text.trim() && !file)) return;
+ const sendMessage = async (text, file = null) => {
+  if (!activeConversation || (!text.trim() && !file)) return;
 
-    try {
-      let res;
-      if (file) {
-        const formData = new FormData();
-        formData.append("media", file);
-        formData.append("text", text.trim());
-        res = await axiosInstance.post(`/chat/${activeConversation._id}/messages`, formData, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
-      } else {
-        res = await axiosInstance.post(`/chat/${activeConversation._id}/messages`, { text: text.trim() });
-      }
-
-      const message = res.data.message;
-      setMessages((prev) => [...prev, message]);
-      socket?.emit("send_message", message);
-
-      setConversations((prev) =>
-        prev.map((c) =>
-          c._id === activeConversation._id ? { ...c, lastMessage: message, updatedAt: new Date() } : c
-        ).sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
-      );
-    } catch {
-      toast.error("Failed to send message");
+  try {
+    let res;
+    if (file) {
+      const formData = new FormData();
+      formData.append("media", file);
+      formData.append("text", text.trim());
+      res = await axiosInstance.post(`/chat/${activeConversation._id}/messages`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+    } else {
+      res = await axiosInstance.post(`/chat/${activeConversation._id}/messages`, { text: text.trim() });
     }
-  };
+
+    const message = res.data.message;
+    
+    // ✅ only add if not already in messages
+    setMessages((prev) => {
+      const exists = prev.some((m) => m._id === message._id);
+      return exists ? prev : [...prev, message];
+    });
+    
+    // don't emit here — let socket.io handle it from backend
+    // socket?.emit("send_message", message);
+
+    setConversations((prev) =>
+      prev.map((c) =>
+        c._id === activeConversation._id ? { ...c, lastMessage: message, updatedAt: new Date() } : c
+      ).sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
+    );
+  } catch {
+    toast.error("Failed to send message");
+  }
+};
 
   // typing indicators
   const startTyping = () => {

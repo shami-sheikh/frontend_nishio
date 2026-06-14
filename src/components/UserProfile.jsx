@@ -9,6 +9,7 @@ import { useAuth } from "../context/AuthContext";
 import { usePost } from "../context/PostContext";
 import axiosInstance from "../api/AxiosInstance";
 import Navbar from "../pages/Navbar";
+import { useChat } from "../context/ChatContext";
 
 const UserProfile = () => {
   const { startConversation } = useChat();
